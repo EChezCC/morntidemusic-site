@@ -2,7 +2,5 @@
 
 Public one-pager for Morntide Music.
 
-Live domain: https://morntidemusic.com
-Channel: https://www.youtube.com/@Morntidemusic
-
-Deploy: Cloudflare Pages, no build. See JARVIS_DNS.md
+Cloudflare Pages Direct Upload of artifacts/Morntide_Site/ is the deploy path.
+See JARVIS_DNS.md.
