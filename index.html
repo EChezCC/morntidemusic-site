@@ -5,12 +5,238 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Morntide — Focus music for deep work</title>
   <meta name="description" content="Soft morning piano and ambient beds for deep work, quiet mornings, and night listening. No lyrics. Stay with one task." />
+  <meta name="google-site-verification" content="fMe-KFpkkVGrvUJE3P4QwtkAutIXdgrSrhrjchv6JHU" />
+
+  <!-- Morntide SEO pack 2026-09-24 — insert in <head> after title/description -->
+  <link rel="canonical" href="https://morntidemusic.com/" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Morntide" />
+  <meta property="og:url" content="https://morntidemusic.com/" />
+  <meta property="og:title" content="Morntide — Focus music for deep work" />
+  <meta property="og:description" content="Soft morning piano and ambient beds for deep work, quiet mornings, and night listening. No lyrics. Stay with one task." />
+  <meta property="og:image" content="https://morntidemusic.com/assets/hero.jpg" />
+  <meta property="og:image:alt" content="Morntide — morning light over water" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Morntide — Focus music for deep work" />
+  <meta name="twitter:description" content="Soft morning piano and ambient beds for deep work, quiet mornings, and night listening. No lyrics. Stay with one task." />
+  <meta name="twitter:image" content="https://morntidemusic.com/assets/hero.jpg" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MusicGroup",
+    "name": "Morntide",
+    "url": "https://morntidemusic.com/",
+    "description": "Soft morning piano and ambient beds for deep work, quiet mornings, and night listening. FOCUS · RISE · SLEEP.",
+    "genre": ["Ambient", "Instrumental", "Focus music"],
+    "image": "https://morntidemusic.com/assets/hero.jpg",
+    "sameAs": [
+      "https://www.youtube.com/@Morntidemusic"
+    ]
+  }
+  </script>
   <link rel="icon" href="assets/logo.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #E8C478;
+      --gold-soft: #F4D7A0;
+      --sun: #F0A04B;
+      --water: #1B5A78;
+      --navy: #0B1C28;
+      --ink: #142633;
+      --cream: #F7F0E4;
+      --mist: rgba(247,240,228,.82);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--navy); color: var(--cream); font-family: Outfit, system-ui, sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+
+    nav {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(14px);
+      background: rgba(11,28,40,.72);
+      border-bottom: 1px solid rgba(232,196,120,.18);
+    }
+    nav .wrap { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; font-size: 13px; }
+    .brand img { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--gold); object-fit: cover; }
+    nav ul { display: flex; gap: 22px; list-style: none; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--gold-soft); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--gold); color: var(--navy); font-weight: 600;
+      padding: 12px 20px; border-radius: 999px; letter-spacing: .04em;
+    }
+    .btn.ghost { background: transparent; color: var(--gold-soft); border: 1px solid rgba(232,196,120,.45); }
+
+    .hero {
+      position: relative; min-height: 88vh;
+      background: #0b1c28 url("assets/hero.jpg") center/cover no-repeat;
+      display: grid; align-items: end;
+    }
+    .hero::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(11,28,40,.18) 0%, rgba(11,28,40,.28) 42%, rgba(11,28,40,.86) 100%);
+    }
+    .hero-copy { position: relative; z-index: 1; padding: 0 0 72px; }
+    .kicker { color: var(--gold); letter-spacing: .22em; text-transform: uppercase; font-size: 12px; margin-bottom: 14px; }
+    h1 { font-family: "Cormorant Garamond", serif; font-size: clamp(44px, 7vw, 84px); font-weight: 500; line-height: .95; max-width: 14ch; }
+    .lede { margin-top: 18px; max-width: 38ch; font-weight: 300; font-size: 18px; color: var(--mist); }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; }
+
+    section { padding: 88px 0; }
+    h2 { font-family: "Cormorant Garamond", serif; font-size: clamp(32px, 4vw, 48px); font-weight: 500; }
+    .sub { color: rgba(247,240,228,.72); margin-top: 10px; max-width: 52ch; }
+
+    .listen { background: linear-gradient(180deg, #0b1c28, #123246); }
+    .frame {
+      margin-top: 28px; border-radius: 18px; overflow: hidden;
+      border: 1px solid rgba(232,196,120,.22);
+      aspect-ratio: 16/9; background: #000;
+    }
+    .frame iframe { width: 100%; height: 100%; border: 0; }
+
+    .lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 32px; }
+    .lane {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(232,196,120,.16);
+      border-radius: 18px; padding: 26px 24px;
+    }
+    .lane h3 { color: var(--gold); letter-spacing: .16em; text-transform: uppercase; font-size: 13px; margin-bottom: 10px; }
+    .lane p { color: rgba(247,240,228,.78); font-weight: 300; line-height: 1.55; }
+    .lane a { display: inline-block; margin-top: 16px; color: var(--gold-soft); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+
+    .radio {
+      background: #0b1c28 url("assets/hero_radio.jpg") center/cover no-repeat;
+      position: relative;
+    }
+    .radio::before {
+      content: ""; position: absolute; inset: 0;
+      background: rgba(11,28,40,.78);
+    }
+    .radio .wrap { position: relative; }
+    .pill {
+      display: inline-block; background: var(--gold); color: var(--navy);
+      font-size: 11px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; padding: 6px 10px; border-radius: 6px; margin-bottom: 14px;
+    }
+
+    .about { background: #102433; }
+    .fine { margin-top: 22px; font-size: 13px; color: rgba(247,240,228,.55); max-width: 62ch; line-height: 1.6; }
+
+    footer { border-top: 1px solid rgba(232,196,120,.16); padding: 28px 0 40px; color: rgba(247,240,228,.55); font-size: 13px; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+    @media (max-width: 800px) {
+      nav ul { display: none; }
+      .lanes { grid-template-columns: 1fr; }
+      .hero { min-height: 78vh; }
+    }
+  </style>
 </head>
 <body>
-  <p>Placeholder — use artifacts/Morntide_Site/index.html for the full page. Jarvis: Direct Upload that folder.</p>
+  <nav>
+    <div class="wrap">
+      <a class="brand" href="#top">
+        <img src="assets/logo.jpg" alt="Morntide" />
+        Morntide
+      </a>
+      <ul>
+        <li><a href="#listen">Listen</a></li>
+        <li><a href="#sessions">Sessions</a></li>
+        <li><a href="#radio">Radio</a></li>
+        <li><a href="#about">About</a></li>
+      </ul>
+      <a class="btn" href="https://www.youtube.com/@Morntidemusic?sub_confirmation=1">Subscribe</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="wrap hero-copy">
+      <p class="kicker">Focus · Rise · Sleep</p>
+      <h1>Press play at first light.</h1>
+      <p class="lede">Soft morning piano and warm analog beds for deep work. No lyrics. No drops. Stay with one task.</p>
+      <div class="actions">
+        <a class="btn" href="#listen">Listen to First Light</a>
+        <a class="btn ghost" href="https://www.youtube.com/@Morntidemusic/live">Focus Radio live</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="listen" id="listen">
+    <div class="wrap">
+      <p class="kicker">Start here</p>
+      <h2>First Light on the Water — one hour</h2>
+      <p class="sub">Soft morning piano and warm analog beds for deep work, study, and flow. One continuous bed so you stay with the task.</p>
+      <div class="frame">
+        <iframe src="https://www.youtube.com/embed/FDCP-FRQ_GU" title="First Light on the Water | Morntide" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      </div>
+      <p class="sub" style="margin-top:1rem"><a href="https://youtu.be/MPDy0P-CVc0">Also: Deep Work — one hour</a></p>
+    </div>
+  </section>
+
+  <section id="sessions">
+    <div class="wrap">
+      <p class="kicker">Playlists</p>
+      <h2>Three ways to use the day</h2>
+      <p class="sub">Open one session. Silence the rest. Writers, coders, students, and remote workers who want calm focus without chatter.</p>
+      <div class="lanes">
+        <article class="lane">
+          <h3>Focus</h3>
+          <p>Morning piano under first light on the water. Deep-work blocks for the desk.</p>
+          <a href="https://www.youtube.com/playlist?list=PLUp6gLFHAa3E">Open FOCUS →</a>
+        </article>
+        <article class="lane">
+          <h3>Rise</h3>
+          <p>Wake-energy sessions when you need a gentle start — still calm, a little more lift.</p>
+          <a href="https://www.youtube.com/playlist?list=PLSmZ4mxAy_Sg">Open RISE →</a>
+        </article>
+        <article class="lane">
+          <h3>Sleep</h3>
+          <p>Soft night ambient for quiet evenings. Florida porch, pool light, still tide.</p>
+          <a href="https://www.youtube.com/playlist?list=PLF2-pms8eUrY">Open SLEEP →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="radio" id="radio">
+    <div class="wrap">
+      <span class="pill">Daily</span>
+      <h2>Morntide Focus Radio</h2>
+      <p class="sub">Live 7:00am–3:00pm Eastern. Soft instrumentals looped for an eight-hour work block. Put it on and stay with one task.</p>
+      <div class="actions">
+        <a class="btn" href="https://www.youtube.com/@Morntidemusic/live">Open the live</a>
+        <a class="btn ghost" href="https://youtu.be/FDCP-FRQ_GU">First Light on the Water</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="wrap">
+      <p class="kicker">The channel</p>
+      <h2>Original sessions. Human-curated.</h2>
+      <p class="sub">Morntide is first-light focus music — calm keys and ambient beds so the sound stays present without pulling attention. New sessions land regularly on YouTube.</p>
+      <div class="actions">
+        <a class="btn" href="https://www.youtube.com/@Morntidemusic?sub_confirmation=1">Subscribe on YouTube</a>
+        <a class="btn ghost" href="https://www.youtube.com/@Morntidemusic">@Morntidemusic</a>
+      </div>
+      <p class="fine">Sessions are produced and human-curated for this channel using commercially licensed production tools. Altered / AI-assisted audio and visuals are disclosed on YouTube. This site points you to the music. It does not replace the channel.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Morntide · morntidemusic.com</span>
+      <span>FOCUS · RISE · SLEEP</span>
+    </div>
+  </footer>
 </body>
 </html>
