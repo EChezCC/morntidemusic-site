@@ -38,6 +38,38 @@
     ]
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": "Spa Bowls | 8 Hours of Singing Bowls for Relaxation & Massage",
+    "description": "Eight hours of singing bowls and soft drones in a candlelit spa room. Every sound is original. No vocals.",
+    "thumbnailUrl": [
+      "https://i.ytimg.com/vi/U78G7IYZ51o/maxresdefault.jpg",
+      "https://i.ytimg.com/vi/U78G7IYZ51o/hqdefault.jpg"
+    ],
+    "uploadDate": "2026-10-03T11:43:42-07:00",
+    "duration": "PT8H5M1S",
+    "embedUrl": "https://www.youtube-nocookie.com/embed/U78G7IYZ51o",
+    "contentUrl": "https://www.youtube.com/watch?v=U78G7IYZ51o",
+    "url": "https://www.youtube.com/watch?v=U78G7IYZ51o",
+    "isFamilyFriendly": true,
+    "author": {
+      "@type": "MusicGroup",
+      "name": "Morntide",
+      "url": "https://morntidemusic.com/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Morntide",
+      "url": "https://morntidemusic.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://morntidemusic.com/assets/logo.jpg"
+      }
+    }
+  }
+  </script>
   <link rel="icon" href="assets/logo.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -134,10 +166,35 @@
     footer { border-top: 1px solid rgba(232,196,120,.16); padding: 28px 0 40px; color: rgba(247,240,228,.55); font-size: 13px; }
     footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
+    .spa { background: linear-gradient(180deg, #0b1c28, #102433); }
+    .yt-lite { position: relative; display: block; width: 100%; height: 100%; cursor: pointer; }
+    .yt-lite img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s ease; }
+    .yt-lite::after {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(11,28,40,0) 55%, rgba(11,28,40,.55) 100%);
+    }
+    .yt-lite .play {
+      position: absolute; z-index: 1; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      width: 76px; height: 76px; border-radius: 50%;
+      background: rgba(11,28,40,.72); border: 1px solid var(--gold);
+      display: grid; place-items: center; transition: background .2s ease, transform .2s ease;
+    }
+    .yt-lite .play svg { width: 26px; height: 26px; margin-left: 4px; fill: var(--gold); }
+    .yt-lite .len {
+      position: absolute; z-index: 1; right: 14px; bottom: 12px;
+      font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-soft);
+    }
+    .yt-lite:hover .play, .yt-lite:focus-visible .play { background: var(--gold); transform: translate(-50%, -50%) scale(1.05); }
+    .yt-lite:hover .play svg, .yt-lite:focus-visible .play svg { fill: var(--navy); }
+    .yt-lite:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+    .spa .note { margin-top: 18px; font-size: 14px; color: var(--gold-soft); letter-spacing: .02em; }
+
     @media (max-width: 800px) {
       nav ul { display: none; }
       .lanes { grid-template-columns: 1fr; }
       .hero { min-height: 78vh; }
+      .yt-lite .play { width: 56px; height: 56px; }
+      .yt-lite .play svg { width: 20px; height: 20px; margin-left: 3px; }
     }
   </style>
 </head>
@@ -151,6 +208,7 @@
       <ul>
         <li><a href="#listen">Listen</a></li>
         <li><a href="#sessions">Sessions</a></li>
+        <li><a href="#spa-bowls">Spa Bowls</a></li>
         <li><a href="#radio">Radio</a></li>
         <li><a href="#about">About</a></li>
       </ul>
@@ -207,6 +265,28 @@
     </div>
   </section>
 
+  <section class="spa" id="spa-bowls">
+    <div class="wrap">
+      <p class="kicker">New · Relax</p>
+      <h2>Spa Bowls — eight hours</h2>
+      <p class="sub">Singing bowls and soft drones in a candlelit room. Every sound is original. No vocals. Put it on for a massage, a long bath, or a slow night in.</p>
+      <div class="frame">
+        <a class="yt-lite" href="https://www.youtube.com/watch?v=U78G7IYZ51o" data-id="U78G7IYZ51o" data-title="Spa Bowls | 8 Hours of Singing Bowls for Relaxation &amp; Massage | Morntide" aria-label="Play Spa Bowls — 8 hours of singing bowls">
+          <img src="https://i.ytimg.com/vi/U78G7IYZ51o/maxresdefault.jpg" alt="Spa Bowls — singing bowls in a candlelit spa room" width="1280" height="720" loading="lazy" decoding="async" />
+          <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          <span class="len" aria-hidden="true">8 hrs</span>
+        </a>
+      </div>
+      <noscript><p class="sub" style="margin-top:1rem"><a href="https://www.youtube.com/watch?v=U78G7IYZ51o">Watch Spa Bowls on YouTube →</a></p></noscript>
+      <div class="actions">
+        <a class="btn" href="https://www.youtube.com/watch?v=U78G7IYZ51o">Watch the 8 hours on YouTube</a>
+        <a class="btn ghost" href="https://www.youtube.com/shorts/QI3qG1IEn4s">Watch the Short</a>
+        <a class="btn ghost" href="https://www.youtube.com/playlist?list=PLKj69vZNgz7s">Open RELAX</a>
+      </div>
+      <p class="note">The Spa Bowls album comes to streaming services Fri Oct 30, 2026.</p>
+    </div>
+  </section>
+
   <section class="radio" id="radio">
     <div class="wrap">
       <span class="pill">Daily</span>
@@ -238,5 +318,20 @@
       <span>FOCUS · RISE · SLEEP</span>
     </div>
   </footer>
+  <script>
+    document.querySelectorAll('.yt-lite').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/' + el.dataset.id + '?autoplay=1';
+        f.title = el.dataset.title;
+        f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+        f.allowFullscreen = true;
+        f.referrerPolicy = 'strict-origin-when-cross-origin';
+        el.replaceWith(f);
+        f.focus();
+      });
+    });
+  </script>
 </body>
 </html>
