@@ -10,12 +10,15 @@ SNIP = ('<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer
         f'gtag("config","{GA}",{{anonymize_ip:true,allow_google_signals:false,allow_ad_personalization_signals:false}});'
         'addEventListener("load",function(){setTimeout(function(){var s=document.createElement("script");s.async=1;'
         f's.src="https://www.googletagmanager.com/gtag/js?id={GA}";document.head.appendChild(s)}},1500)}});</script>')
-SKIP = {".git", "dist", "tools"}
+SKIP = {"dist", "tools", "node_modules"}  # top-level dirs never shipped
 NOCOPY = {"README.md", "JARVIS_DNS.md"}
+NONSITE_EXT = {".md", ".py", ".toml", ".lock", ".log"}
 if D.exists(): shutil.rmtree(D)
 for p in R.rglob("*"):
     rel = p.relative_to(R)
-    if rel.parts[0] in SKIP or p.is_dir() or str(rel) in NOCOPY: continue
+    if p.is_dir() or rel.parts[0] in SKIP or "node_modules" in rel.parts: continue
+    if any(x.startswith(".") for x in rel.parts): continue  # hidden files/dirs (.git, .gitignore, ...)
+    if str(rel) in NOCOPY or p.suffix in NONSITE_EXT or p.name in {"package.json", "package-lock.json"}: continue
     out = D / rel; out.parent.mkdir(parents=True, exist_ok=True)
     if p.suffix == ".html" and not re.fullmatch(r"google[0-9a-f]+\.html", p.name):
         h = p.read_text()
