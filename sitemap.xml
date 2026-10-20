@@ -1,11 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://morntidemusic.com/</loc>
-    <lastmod>2026-10-03</lastmod>
+    <lastmod>2026-10-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://morntidemusic.com/assets/deep-focus-coding-cover.jpg</image:loc>
+    </image:image>
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/R2rgrxRU0ro/maxresdefault.jpg</video:thumbnail_loc>
+      <video:title>this playlist will keep you in deep focus while coding (3 hours, no lyrics)</video:title>
+      <video:description>Three hours of electronic ambient music for coding, programming and deep focus. No lyrics, no drops, no sudden changes.</video:description>
+      <video:player_loc>https://www.youtube-nocookie.com/embed/R2rgrxRU0ro</video:player_loc>
+      <video:duration>10800</video:duration>
+      <video:publication_date>2026-10-20T12:00:00-04:00</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+    </video:video>
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/U78G7IYZ51o/maxresdefault.jpg</video:thumbnail_loc>
       <video:title>Spa Bowls | 8 Hours of Singing Bowls for Relaxation &amp; Massage</video:title>
