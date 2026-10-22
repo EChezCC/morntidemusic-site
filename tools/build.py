@@ -103,6 +103,7 @@ NAV = """  <nav>
     <div class="wrap">
       <a class="brand" href="/"><img src="/assets/logo.jpg" alt="Morntide" width="42" height="42" />Morntide</a>
       <ul>
+        <li><a href="/player/">Music Player</a></li>
         <li><a href="/releases/">Releases</a></li>
         <li><a href="/focus/">Focus</a></li>
         <li><a href="/rise/">Rise</a></li>
@@ -149,6 +150,13 @@ def shell(path, title, desc, body, ld, img=None, robots="index, follow"):
 </body>
 </html>
 """
+def embed(c, autoplay=False):
+    """Visible YouTube player (iframe) -- same as djchezerecta release pages' video player, loaded with the page."""
+    t = clean_title(c["title"])
+    return (f'<div class="frame player-frame"><iframe src="https://www.youtube-nocookie.com/embed/{c["id"]}?rel=0&amp;playsinline=1{"&amp;autoplay=1" if autoplay else ""}" '
+            f'title="{e(t)} | Morntide" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" '
+            f'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>'
+            f'<noscript><p class="sub"><a href="https://www.youtube.com/watch?v={c["id"]}">Watch on YouTube →</a></p></noscript>')
 def card(c):
     return (f'<a class="card" href="{rurl(c)}"><img src="{e(c["thumb"])}" alt="{e(clean_title(c["title"]))}" width="480" height="270" loading="lazy" decoding="async" />'
             f'<div class="ct"><span class="chip">{MOODS[c["mood"]][0]}</span><h3>{e(clean_title(c["title"]))}</h3><p class="d">{human(c["duration"])}</p></div></a>')
@@ -164,8 +172,8 @@ def release(c):
     t = clean_title(c["title"]); mood = MOODS[c["mood"]]; url = SITE + rurl(c)
     desc = first_text(c)
     body = [f'<p class="crumbs"><a href="/">Home</a> › <a href="/releases/">Releases</a> › <a href="/{c["mood"]}/">{mood[0].title()}</a></p>',
-            f'<h1>{e(t)}</h1>', f'<p class="meta"><span class="chip">{mood[0]}</span> · {human(c["duration"])} · {e(c["upload_date"][:10])}</p>', facade(c)]
-    acts = [f'<a class="btn" href="https://www.youtube.com/watch?v={c["id"]}">Watch on YouTube</a>']
+            f'<h1>{e(t)}</h1>', f'<p class="meta"><span class="chip">{mood[0]}</span> · {human(c["duration"])} · {e(c["upload_date"][:10])}</p>', embed(c)]
+    acts = [f'<a class="btn" href="/player/?v={c["id"]}">▶ Open in Music Player</a>', f'<a class="btn ghost" href="https://www.youtube.com/watch?v={c["id"]}">Watch on YouTube</a>']
     acts += [f'<a class="btn ghost" href="https://www.youtube.com/playlist?list={p}">Open {e(PL[p]["label"])} playlist</a>' for p in c["playlists"]]
     acts.append(f'<a class="btn ghost" href="/{c["mood"]}/">More {mood[0].title()} releases</a>')
     body.append('<div class="actions">' + "".join(acts) + '</div>')
@@ -211,9 +219,121 @@ def hub(k):
     return shell(f"/{k}/", f"{lab} — {h1} | Morntide", intro, body,
                  [{"@context": "https://schema.org", "@type": "CollectionPage", "name": f"{lab} — {h1}", "url": f"{SITE}/{k}/", "mainEntity": itemlist(f"Morntide {lab}", items)},
                   crumbs_ld([("Home", "/"), ("Releases", "/releases/"), (lab.title(), f"/{k}/")])])
+PLAYER_JS = r"""
+(function(){
+  var D = JSON.parse(document.getElementById('mp-data').textContent), T = D.tracks;
+  var $ = function(id){ return document.getElementById(id); };
+  var q = '', mood = '', cur = null, loaded = false;
+  var want = new URLSearchParams(location.search).get('v');
+  var start = T.filter(function(t){ return t.id === want; })[0] || T[0];
+  function h(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function list(){ return T.filter(function(t){ return (!mood || t.mood === mood) && (!q || t.title.toLowerCase().indexOf(q) >= 0); }); }
+  function frame(src, title){
+    var f = document.createElement('iframe'); f.src = src; f.title = title;
+    f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin';
+    var v = $('mp-video'); v.innerHTML = ''; v.appendChild(f);
+  }
+  function show(t, play){
+    cur = t;
+    $('mp-title').textContent = t.title;
+    $('mp-meta').textContent = t.moodLabel + ' · ' + t.dur + ' · ' + t.date;
+    $('mp-page').href = t.page;
+    $('mp-yt').href = 'https://www.youtube.com/watch?v=' + t.id;
+    $('mp-stores').innerHTML = t.stores.map(function(s){ return '<a class="btn ghost" rel="noopener" href="' + h(s.url) + '">' + h(s.name) + '</a>'; }).join('');
+    if (play || loaded) { loaded = true; frame('https://www.youtube-nocookie.com/embed/' + t.id + '?autoplay=1&rel=0&playsinline=1', t.title); }
+    else {
+      $('mp-video').innerHTML = '<button type="button" class="mp-tap" id="mp-tap"><img src="' + h(t.thumb) + '" alt="" width="1280" height="720" />'
+        + '<span class="mp-pb" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span><small>Tap play to load the YouTube player</small>'
+        + '<span class="sr">Play ' + h(t.title) + '</span></button>';
+      $('mp-tap').onclick = function(){ show(cur, true); };
+    }
+    render();
+    if (history.replaceState) history.replaceState(null, '', '?v=' + t.id);
+  }
+  function step(d){ var L = list(); if (!L.length) return; var i = L.indexOf(cur); show(L[(i + d + L.length) % L.length], true); }
+  function render(){
+    var L = list();
+    $('mp-list').innerHTML = L.length ? L.map(function(t){
+      return '<li' + (t === cur ? ' class="on"' : '') + '><button type="button" data-id="' + t.id + '"' + (t === cur ? ' aria-current="true"' : '') + '>'
+        + '<img src="' + h(t.thumb) + '" alt="" width="112" height="63" loading="lazy" decoding="async" /><span><b>' + h(t.title) + '</b><small>'
+        + h(t.moodLabel) + ' · ' + h(t.dur) + '</small></span></button><a class="mp-rp" href="' + t.page + '">Release page</a></li>';
+    }).join('') : '<li class="none">No releases match.</li>';
+    [].forEach.call($('mp-list').querySelectorAll('button[data-id]'), function(b){
+      b.onclick = function(){ show(T.filter(function(t){ return t.id === b.dataset.id; })[0], true); $('mp').scrollIntoView({behavior:'smooth', block:'nearest'}); };
+    });
+    [].forEach.call(document.querySelectorAll('.mp-chips button'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.mood === mood)); });
+  }
+  [].forEach.call(document.querySelectorAll('.mp-chips button'), function(b){ b.onclick = function(){ mood = b.dataset.mood; render(); }; });
+  [].forEach.call(document.querySelectorAll('.mp-pl'), function(b){ b.onclick = function(){
+    loaded = true; frame('https://www.youtube-nocookie.com/embed/videoseries?list=' + b.dataset.list + '&autoplay=1&rel=0&playsinline=1', b.dataset.title);
+    $('mp-title').textContent = b.dataset.title; $('mp-meta').textContent = 'YouTube playlist'; $('mp-stores').innerHTML = '';
+    $('mp-page').href = '/' + b.dataset.mood + '/'; $('mp-yt').href = 'https://www.youtube.com/playlist?list=' + b.dataset.list;
+    $('mp').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }; });
+  $('mp-q').oninput = function(){ q = this.value.trim().toLowerCase(); render(); };
+  $('mp-prev').onclick = function(){ step(-1); };
+  $('mp-next').onclick = function(){ step(1); };
+  show(start, false);
+})();
+"""
+PLAYER_CSS = """
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .mp { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 32px; align-items: center; margin-top: 18px; }
+    .mp-video { position: relative; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(232,196,120,.25); }
+    .mp-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .mp-tap { all: unset; cursor: pointer; position: absolute; inset: 0; display: block; }
+    .mp-tap img { width: 100%; height: 100%; object-fit: cover; }
+    .mp-tap small { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; font-size: 13px; color: var(--cream); text-shadow: 0 1px 4px #000; }
+    .mp-pb { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 78px; height: 78px; border-radius: 50%; background: var(--gold); display: grid; place-items: center; box-shadow: 0 6px 30px rgba(0,0,0,.55); }
+    .mp-pb svg { width: 32px; height: 32px; margin-left: 4px; fill: var(--navy); }
+    .mp-tap:hover .mp-pb, .mp-tap:focus-visible .mp-pb { transform: translate(-50%, -50%) scale(1.07); }
+    .mp-tap:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px; }
+    .mp-info h2 { margin: 6px 0 10px; font-size: clamp(24px, 3vw, 34px); line-height: 1.15; }
+    .mp-info .actions { margin-top: 18px; }
+    .mp-pls { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+    .mp-pl { all: unset; cursor: pointer; display: block; border: 1px solid rgba(232,196,120,.3); border-radius: 12px; padding: 14px 16px; background: rgba(20,38,51,.7); }
+    .mp-pl b { display: block; color: var(--gold); letter-spacing: .1em; font-size: 13px; text-transform: uppercase; } .mp-pl small { color: var(--mist); font-size: 13px; }
+    .mp-pl:hover, .mp-pl:focus-visible { border-color: var(--gold); }
+    .mp-tools { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 8px 0 16px; }
+    .mp-tools input { flex: 1 1 220px; background: rgba(20,38,51,.8); color: var(--cream); border: 1px solid rgba(232,196,120,.3); border-radius: 999px; padding: 11px 18px; font: inherit; }
+    .mp-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mp-chips button { font: inherit; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; color: var(--gold-soft); background: transparent; border: 1px solid rgba(232,196,120,.45); border-radius: 999px; padding: 8px 14px; }
+    .mp-chips button[aria-pressed="true"] { background: var(--gold); color: var(--navy); }
+    .mp-list { list-style: none; display: grid; gap: 8px; }
+    .mp-list li { display: flex; align-items: center; gap: 10px; border: 1px solid rgba(232,196,120,.12); border-radius: 12px; padding: 6px 12px 6px 6px; background: rgba(20,38,51,.55); }
+    .mp-list li.on { border-color: var(--gold); }
+    .mp-list button { all: unset; cursor: pointer; flex: 1; display: flex; gap: 14px; align-items: center; min-width: 0; }
+    .mp-list img { width: 112px; height: 63px; object-fit: cover; border-radius: 8px; flex: none; }
+    .mp-list b { display: block; font-weight: 500; line-height: 1.3; } .mp-list small { color: var(--gold-soft); font-size: 13px; }
+    .mp-rp { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold-soft); white-space: nowrap; text-decoration: underline; text-underline-offset: 3px; }
+    @media (max-width: 760px) { .mp { grid-template-columns: 1fr; gap: 18px; } .mp-list img { width: 84px; height: 47px; } .mp-rp { display: none; } }
+"""
+def player_page():
+    data = {"tracks": [{"id": c["id"], "title": clean_title(c["title"]), "mood": c["mood"], "moodLabel": MOODS[c["mood"]][0], "dur": human(c["duration"]),
+                        "date": c["upload_date"][:10], "thumb": c["thumb"], "page": rurl(c), "stores": c["stores"]} for c in CAT]}
+    pls = [(p, k) for k, v in MOODS.items() for p in v[3]]
+    body = ('<p class="crumbs"><a href="/">Home</a> › Music Player</p><h1>Music Player</h1>'
+            '<p class="sub">Play every Morntide session and playlist in one place. Pick a mood, press play, stay with one task.</p>'
+            '<section class="mp" id="mp" aria-label="Now playing"><div class="mp-video" id="mp-video"></div>'
+            '<div class="mp-info"><p class="kicker">Now playing</p><h2 id="mp-title"></h2><p class="meta" id="mp-meta"></p>'
+            '<div class="actions"><button type="button" class="btn ghost" id="mp-prev" aria-label="Previous">⏮</button><button type="button" class="btn ghost" id="mp-next" aria-label="Next">⏭</button>'
+            '<a class="btn" id="mp-page" href="/releases/">Release page</a><a class="btn ghost" id="mp-yt" href="https://www.youtube.com/@Morntidemusic">YouTube</a></div>'
+            '<div class="actions" id="mp-stores"></div>'
+            '<div class="actions"><a class="btn ghost" href="https://www.youtube.com/@Morntidemusic/live">● Focus Radio live</a></div></div></section>'
+            '<h2>Playlists</h2><div class="mp-pls">' + "".join(
+                f'<button type="button" class="mp-pl" data-list="{p}" data-mood="{k}" data-title="{e(PL[p]["label"])} playlist"><b>{e(PL[p]["label"])}</b><small>{MOODS[k][0].title()} · play on YouTube</small></button>' for p, k in pls) + '</div>'
+            '<h2>Releases</h2><div class="mp-tools"><label class="sr" for="mp-q">Search releases</label><input id="mp-q" type="search" placeholder="Search releases" />'
+            '<div class="mp-chips" role="group" aria-label="Moods"><button type="button" data-mood="">All</button>' + "".join(f'<button type="button" data-mood="{k}">{v[0]}</button>' for k, v in MOODS.items()) + '</div></div>'
+            '<ul class="mp-list" id="mp-list"></ul><noscript><div class="grid">' + "".join(card(c) for c in CAT) + '</div></noscript>'
+            f'<script id="mp-data" type="application/json">{json.dumps(data, ensure_ascii=False).replace("</", "<\\/")}</script>'
+            f'<style>{PLAYER_CSS}</style><script>{PLAYER_JS}</script>')
+    return shell("/player/", "Music Player | Morntide", "Play every Morntide focus, morning and sleep session and playlist in one player.", body,
+                 [{"@context": "https://schema.org", "@type": "WebPage", "name": "Morntide Music Player", "url": SITE + "/player/"},
+                  crumbs_ld([("Home", "/"), ("Music Player", "/player/")])])
 def notfound():
     body = '<h1>Page not found</h1><p class="sub">That page drifted out with the tide. Try the releases or one of the moods.</p>' + mood_links() + '<div class="actions"><a class="btn" href="/releases/">All releases</a><a class="btn ghost" href="/">Home</a></div>'
-    return shell("/404", "Page not found | Morntide", "Page not found.", body, [], robots="noindex")
+    return shell("/404.html", "Page not found | Morntide", "Page not found.", body, [], robots="noindex")
 def home():
     h = src_index
     for vid, c in BYID.items(): h = h.replace("{{rel:%s}}" % vid, rurl(c))
@@ -224,7 +344,7 @@ def home():
     h = h.replace("<!--LATEST-RELEASES-->", latest, 1)
     return h.replace("</style>", EXTRA + "</style>", 1)
 def sitemap():
-    u = [(SITE + "/", CAT[0]["upload_date"][:10], "1.0", ""), (SITE + "/releases/", CAT[0]["upload_date"][:10], "0.9", "")]
+    u = [(SITE + "/", CAT[0]["upload_date"][:10], "1.0", ""), (SITE + "/releases/", CAT[0]["upload_date"][:10], "0.9", ""), (SITE + "/player/", CAT[0]["upload_date"][:10], "0.8", "")]
     for k in MOODS:
         it = [c for c in CAT if c["mood"] == k]; u.append((f"{SITE}/{k}/", it[0]["upload_date"][:10] if it else CAT[0]["upload_date"][:10], "0.8", ""))
     for c in CAT:
@@ -247,6 +367,7 @@ w("index.html", home())
 w("releases/index.html", releases_index())
 for k in MOODS: w(f"{k}/index.html", hub(k))
 for c in CAT: w(f"releases/{c['slug']}/index.html", release(c))
+w("player/index.html", player_page())
 w("404.html", notfound())
 spa = BYID.get("U78G7IYZ51o")
 w("_redirects", (f"/spa-bowls {rurl(spa)} 301\n/spa-bowls/ {rurl(spa)} 301\n" if spa else ""))
@@ -260,4 +381,4 @@ for f in D.rglob("*.html"):
 sm = (D / "sitemap.xml").read_text()
 for c in CAT:
     assert (D / f"releases/{c['slug']}/index.html").exists() and SITE + rurl(c) in sm, f"release check failed: {c['id']}"
-print(f"built {D}: {len(CAT)} release pages, 3 mood hubs, releases index, 404, sitemap ({sm.count('<url>')} urls)")
+print(f"built {D}: {len(CAT)} release pages, 3 mood hubs, releases index, music player, 404, sitemap ({sm.count('<url>')} urls)")

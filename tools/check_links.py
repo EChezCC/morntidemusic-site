@@ -5,13 +5,16 @@ import concurrent.futures as cf, pathlib, re, sys, urllib.parse, urllib.request,
 D = pathlib.Path(__file__).resolve().parent.parent / "dist"
 UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36"}
 ext, bad = {}, []
+SITE = "https://morntidemusic.com"
 for f in D.rglob("*.html"):
     page = "/" + str(f.relative_to(D)).replace("index.html", "")
-    for tag in re.findall(r"<(?:a|link|img|script|iframe)\b[^>]*>", f.read_text()):
+    src = re.sub(r"(<script\b[^>]*>).*?</script>", r"\1</script>", f.read_text(), flags=re.S)   # JS templates are not links
+    for tag in re.findall(r"<(?:a|link|img|script|iframe)\b[^>]*>", src):
         if re.search(r'rel="(?:preconnect|dns-prefetch)"', tag): continue
         for u in re.findall(r'(?:href|src)="([^"]+)"', tag):
             u = html.unescape(u)
             if u.startswith(("mailto:", "tel:", "#", "data:", "javascript:")): continue
+            if u.startswith(SITE): u = u[len(SITE):] or "/"   # own-site absolute URLs (canonical, og) must exist in this build
             if u.startswith("http"): ext.setdefault(u, page); continue
             p = urllib.parse.urljoin(page, u).split("#")[0].split("?")[0]
             t = D / p.lstrip("/")
