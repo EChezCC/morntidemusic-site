@@ -372,10 +372,28 @@ w("404.html", notfound())
 spa = BYID.get("U78G7IYZ51o")
 w("_redirects", (f"/spa-bowls {rurl(spa)} 301\n/spa-bowls/ {rurl(spa)} 301\n" if spa else ""))
 w("sitemap.xml", sitemap())
+# Mobile menu (<760px), same pattern as djchezerecta: a menu button that reveals every nav link, on every page.
+MENU_BTN = ('<button type="button" class="mbtn" aria-label="Menu" aria-expanded="false" aria-controls="site-nav">'
+            '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>')
+MENU_CSS = ('<style>.mbtn{display:none;background:transparent;border:1px solid rgba(232,196,120,.45);color:var(--gold-soft);border-radius:10px;width:44px;height:44px;'
+            'align-items:center;justify-content:center;cursor:pointer;margin-left:auto}.mbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}'
+            '@media (max-width:760px){nav .wrap{flex-wrap:wrap;position:relative}.mbtn{display:inline-flex}nav ul#site-nav{display:none}'
+            'nav.open ul#site-nav{display:flex;flex-direction:column;gap:0;order:10;width:100%;padding:6px 0 10px}'
+            'nav.open ul#site-nav a{display:block;padding:13px 4px;border-top:1px solid rgba(232,196,120,.14);font-size:15px}}</style>')
+MENU_JS = ('<script>(function(){var n=document.querySelector("nav"),b=n&&n.querySelector(".mbtn");if(!b)return;'
+           'function set(o){n.classList.toggle("open",o);b.setAttribute("aria-expanded",String(o));b.setAttribute("aria-label",o?"Close menu":"Menu")}'
+           'b.addEventListener("click",function(){set(!n.classList.contains("open"))});'
+           'n.querySelectorAll("#site-nav a").forEach(function(a){a.addEventListener("click",function(){set(false)})});'
+           'document.addEventListener("keydown",function(e){if(e.key==="Escape"&&n.classList.contains("open")){set(false);b.focus()}})})();</script>')
+def add_menu(h):
+    if 'class="mbtn"' in h or "<nav>" not in h: return h
+    nav = h.index("<nav>"); ul = h.index("<ul>", nav)
+    h = h[:ul] + MENU_BTN + '<ul id="site-nav">' + h[ul + 4:]
+    return h.replace("</head>", MENU_CSS + "</head>", 1).replace("</body>", MENU_JS + "</body>", 1)
 # GA4 + fail-closed checks
 for f in D.rglob("*.html"):
     if re.fullmatch(r"google[0-9a-f]+\.html", f.name): continue
-    h = f.read_text()
+    h = add_menu(f.read_text()); f.write_text(h)
     for blk in re.findall(r'<script type="application/ld\+json">(.*?)</script>', h, re.S): json.loads(blk)
     if SNIP and GA not in h: h = h.replace("</head>", SNIP + "</head>", 1); f.write_text(h)
 sm = (D / "sitemap.xml").read_text()
