@@ -7,7 +7,7 @@ Static site for Morntide Music: home one-pager + one page per YouTube release (d
   `data/shorts.json` (Shorts + parent video from their description link), `data/playlists.json`.
   Fail-closed: a video is excluded unless yt-dlp confirms `availability=public` and not live/upcoming; zero videos aborts.
   `YTDLP_META_DIR=dir` reuses fresh (<24 h) `yt-dlp -J` files (`<id>.json`, `s_<id>.json` for Shorts).
-- Slugs come from the title and are pinned in catalog.json once written (URLs never change on a retitle).
+- Slugs: `data/slugs.json` (video id → short keyword slug) pins every URL forever; a new video gets an auto 3–4 keyword slug appended there by update.py. Edit it only before a page goes live.
 - Mood: FOCUS/RISE/SLEEP playlist first, then Deep Work Blocks → FOCUS, RELAX/First Light Sessions → RISE, anything else → SLEEP.
 - Store links: only kept when the store page names Morntide (Spotify checked via its embed page). Unverifiable links are dropped.
 

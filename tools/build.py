@@ -14,6 +14,12 @@ D = R / "dist"; SITE = "https://morntidemusic.com"
 CAT = json.loads((R / "data/catalog.json").read_text())
 SHORTS = json.loads((R / "data/shorts.json").read_text())
 PL = {p["id"]: p for p in json.loads((R / "data/playlists.json").read_text())}
+SLUGS = json.loads((R / "data/slugs.json").read_text())
+for c in CAT:   # data/slugs.json is the single source of truth for URLs
+    assert c["id"] in SLUGS, f"no pinned slug for {c['id']} (run tools/update.py)"
+    c["slug"] = SLUGS[c["id"]]
+assert len({c["slug"] for c in CAT}) == len(CAT), "duplicate slugs"
+assert all(re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+){1,5}", c["slug"]) for c in CAT), "bad slug format"
 BYID = {c["id"]: c for c in CAT}
 MOODS = {
  "focus": ("FOCUS", "Focus music for deep work", "Morning piano, soft electronic and ambient beds for deep work, coding and study. No lyrics, no drops. Pick one task and stay with it.", ["PLUp6gLFHAa3E", "PLe1cGzmYaAX0"]),
@@ -72,7 +78,7 @@ EXTRA = """
     .page { padding: 48px 0 80px; }
     .crumbs { font-size: 13px; letter-spacing: .06em; color: var(--gold-soft); margin-bottom: 18px; }
     .crumbs a { text-decoration: underline; text-underline-offset: 3px; }
-    .page h1 { font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: clamp(32px, 5vw, 54px); line-height: 1.08; margin-bottom: 14px; }
+    .page h1 { max-width: none; font-family: "Cormorant Garamond", serif; font-weight: 500; font-size: clamp(32px, 5vw, 54px); line-height: 1.08; margin-bottom: 14px; }
     .meta { color: var(--gold-soft); font-size: 14px; letter-spacing: .06em; margin-bottom: 24px; }
     .chip { display: inline-block; border: 1px solid rgba(232,196,120,.5); border-radius: 999px; padding: 3px 10px; font-size: 12px; letter-spacing: .12em; color: var(--gold); text-transform: uppercase; }
     .prose { max-width: 720px; margin-top: 28px; line-height: 1.65; color: var(--mist); font-weight: 300; }

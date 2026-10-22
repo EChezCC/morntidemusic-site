@@ -13,6 +13,7 @@ PLAYLISTS = {  # id -> (label, mood).  Rule order for a video's mood: FOCUS/RISE
   "PLUp6gLFHAa3E": ("FOCUS", "focus"), "PLSmZ4mxAy_Sg": ("RISE", "rise"), "PLF2-pms8eUrY": ("SLEEP", "sleep"),
   "PLe1cGzmYaAX0": ("Deep Work Blocks", "focus"), "PLKj69vZNgz7s": ("RELAX", "rise"), "PLH3nuFmJ72Ds": ("First Light Sessions", "rise")}
 ORDER = list(PLAYLISTS)
+SLUGS = {}
 META = os.environ.get("YTDLP_META_DIR")
 STORE_RE = r"https?://(?:open\.spotify\.com|music\.apple\.com|music\.amazon\.com|music\.youtube\.com|distrokid\.com/hyperfollow)[^\s)\"']*"
 STORE_NAME = [("open.spotify.com", "Spotify"), ("music.apple.com", "Apple Music"), ("music.youtube.com", "YouTube Music"),
@@ -35,11 +36,13 @@ def get(url):
         with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20) as r: return r.status, r.read(400000).decode("utf8", "ignore")
     except Exception as e: return getattr(e, "code", 0), ""
 def is_public(m): return m.get("availability") == "public" and m.get("live_status") in (None, "not_live")
+STOP = {"a","an","the","of","for","to","and","in","on","with","your","this","that","you","will","keep","me","my","is","it",
+        "hour","hours","hr","hrs","minutes","min","no","listen","need","playlist","morntide","music","best","perfect","1","2","3","8","53","one"}
 def slugify(t):
-    t = re.sub(r"\s*[|·]\s*Morntide\s*$", "", t, flags=re.I)
-    s = re.sub(r"[^a-z0-9]+", "-", t.lower().replace("&", " and ")).strip("-")
-    if len(s) > 60: s = s[:60].rsplit("-", 1)[0]
-    return s
+    """Short, keyword-led slug (3-5 words). Only used for a NEW video; data/slugs.json pins every slug forever."""
+    t = re.sub(r"\s*[|·]\s*Morntide\s*$", "", t, flags=re.I).lower().replace("&", " ")
+    w = [x for x in re.findall(r"[a-z0-9]+", t) if x not in STOP]
+    return "-".join(w[:4]) or "release"
 def thumb(vid):
     for q in ("maxresdefault", "sddefault", "hqdefault"):
         u = f"https://i.ytimg.com/vi/{vid}/{q}.jpg"
@@ -68,6 +71,7 @@ def main():
     except Exception as e: die(f"listing failed: {e}")
     if not longs: die("zero long-form videos")
     old = {}
+    SLUGS.update(json.loads((D / "slugs.json").read_text()) if (D / "slugs.json").exists() else {})
     if (D / "catalog.json").exists(): old = {c["id"]: c for c in json.loads((D / "catalog.json").read_text())}
     cat, slugs = [], set()
     for e in longs:
@@ -77,8 +81,12 @@ def main():
         if not is_public(m) or (m.get("duration") or 0) < 180: print(f"  skip {vid}: not public long-form", file=sys.stderr); continue
         inpl = [p for p in ORDER if vid in pls[p]]
         mood = PLAYLISTS[inpl[0]][1] if inpl else "sleep"
-        slug = old.get(vid, {}).get("slug") or slugify(m["title"])   # pinned once published: URLs never change
-        while slug in slugs: slug += "-" + vid[:4].lower()
+        slug = SLUGS.get(vid)   # data/slugs.json pins every slug: URLs never change
+        if not slug:
+            slug = slugify(m["title"])
+            while slug in slugs or slug in SLUGS.values(): slug += "-" + re.sub(r"[^a-z0-9]", "", vid.lower())[:4]
+            SLUGS[vid] = slug; print(f"  new slug {vid} -> {slug}", file=sys.stderr)
+        if slug in slugs: die(f"duplicate slug {slug}")
         slugs.add(slug)
         ts = m.get("timestamp") or 0
         cat.append({"id": vid, "slug": slug, "title": m["title"], "description": m.get("description") or "",
@@ -98,6 +106,7 @@ def main():
     cat.sort(key=lambda c: -c["timestamp"])
     D.mkdir(exist_ok=True)
     (D / "catalog.json").write_text(json.dumps(cat, ensure_ascii=False, indent=1))
+    (D / "slugs.json").write_text(json.dumps(SLUGS, ensure_ascii=False, indent=1))
     (D / "shorts.json").write_text(json.dumps(sh, ensure_ascii=False, indent=1))
     (D / "playlists.json").write_text(json.dumps([{"id": p, "label": PLAYLISTS[p][0], "mood": PLAYLISTS[p][1], "ids": pls[p]} for p in ORDER], indent=1))
     print(f"catalog: {len(cat)} releases, {len(sh)} shorts ({sum(1 for s in sh if s['parent'])} linked)")
