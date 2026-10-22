@@ -1,0 +1,36 @@
+# INACTIVE until moved to .github/workflows/auto-update.yml (needs a token with `workflow` scope or the GitHub web UI).
+name: Auto-update releases
+on:
+  schedule: [{cron: '47 11 * * *'}]   # daily 11:47 UTC (djchezerecta runs 11:17)
+  workflow_dispatch: {}
+permissions: {contents: write}
+concurrency: {group: auto-update, cancel-in-progress: false}
+env:
+  PAGES_PROJECT: morntidemusic-site
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install yt-dlp
+      - name: Fetch public long-form uploads (fail-closed)
+        run: python3 tools/update.py
+      - name: Build
+        run: python3 tools/build.py
+      - name: Link check
+        run: bash tools/check_links.sh
+      - name: Deploy to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test "$CLOUDFLARE_ACCOUNT_ID" = "e194d901ccaf3ac1fbe2f3282cc154eb" || { echo "Refusing: unexpected Cloudflare account"; exit 1; }
+          npx --yes wrangler@3 pages deploy dist --project-name "$PAGES_PROJECT" --branch main --commit-hash "$GITHUB_SHA"
+      - name: Commit data changes
+        run: |
+          git config user.name "morntide-bot"; git config user.email "actions@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || { git commit -m "auto: release data $(date -u +%F)"; git push; }

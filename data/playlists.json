@@ -1,0 +1,120 @@
+[
+ {
+  "id": "PLUp6gLFHAa3E",
+  "label": "FOCUS",
+  "mood": "focus",
+  "ids": [
+   "_ONhZdxsGg4",
+   "H1yolNAPu0c",
+   "R2rgrxRU0ro",
+   "QmPOSboD7EA",
+   "NTsLwcnBb1Q",
+   "pHk4J9bw5_0",
+   "ZMyAJdQBQSs",
+   "rVn_kQSXWhU",
+   "9avtzUrQjDo",
+   "a65tpoKZOeI",
+   "ViiBeUUA5rQ",
+   "GnTjq59sRv0",
+   "TVPzBh2dh1Y",
+   "3dR60N8iMcQ",
+   "tkMY70rFDqA",
+   "mNS_seLjHY4",
+   "4X0APgfXp1I",
+   "mn5DANXllaA",
+   "6UoDC8UFzj0",
+   "uHdbPDJkfGs",
+   "VVCMB0IN0Dk",
+   "bq4k6nL48OA",
+   "ohBAMkAwTMQ",
+   "KQdvp4FMOdI",
+   "NkFuOTTqZqY",
+   "6CXsbpsPR50",
+   "-IveA_aaf2M",
+   "foWWGuxmGWI",
+   "sQD1INKXYv0",
+   "9KUpStxO_00",
+   "nSjNhQCMzp0",
+   "c72ld4iNns8",
+   "-J0EJKBW6Q4",
+   "TZLnPK6nmBs",
+   "6dkl1uzGgjA",
+   "FDCP-FRQ_GU",
+   "Hqb229qBnis",
+   "pCbAsXdPqpg",
+   "NLRaVikuQls",
+   "9nxV-E5x4kM",
+   "M_ZMGE9oTjE",
+   "BCJrx7gh-PM",
+   "ZiRfM8u5-oA",
+   "hSRa7ejUPRM",
+   "L11Hc6Jc1SA",
+   "MPDy0P-CVc0"
+  ]
+ },
+ {
+  "id": "PLSmZ4mxAy_Sg",
+  "label": "RISE",
+  "mood": "rise",
+  "ids": [
+   "9nxV-E5x4kM",
+   "uPqitC0mm4g"
+  ]
+ },
+ {
+  "id": "PLF2-pms8eUrY",
+  "label": "SLEEP",
+  "mood": "sleep",
+  "ids": [
+   "DnELf6IoANQ",
+   "-CZW0rGHg5o",
+   "WqhaduWaToI",
+   "GDv_AyRAm78",
+   "64tyeo8LkDM"
+  ]
+ },
+ {
+  "id": "PLe1cGzmYaAX0",
+  "label": "Deep Work Blocks",
+  "mood": "focus",
+  "ids": [
+   "_ONhZdxsGg4",
+   "QmPOSboD7EA",
+   "6UoDC8UFzj0",
+   "uHdbPDJkfGs",
+   "NkFuOTTqZqY",
+   "6CXsbpsPR50",
+   "-IveA_aaf2M",
+   "foWWGuxmGWI",
+   "9nxV-E5x4kM",
+   "M_ZMGE9oTjE",
+   "BCJrx7gh-PM",
+   "ZiRfM8u5-oA",
+   "hSRa7ejUPRM",
+   "L11Hc6Jc1SA",
+   "MPDy0P-CVc0"
+  ]
+ },
+ {
+  "id": "PLKj69vZNgz7s",
+  "label": "RELAX",
+  "mood": "rise",
+  "ids": [
+   "U78G7IYZ51o",
+   "QI3qG1IEn4s"
+  ]
+ },
+ {
+  "id": "PLH3nuFmJ72Ds",
+  "label": "First Light Sessions",
+  "mood": "rise",
+  "ids": [
+   "TZLnPK6nmBs",
+   "6dkl1uzGgjA",
+   "FDCP-FRQ_GU",
+   "9nxV-E5x4kM",
+   "hSRa7ejUPRM",
+   "L11Hc6Jc1SA"
+  ]
+ }
+]
