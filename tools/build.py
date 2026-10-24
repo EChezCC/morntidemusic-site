@@ -223,31 +223,162 @@ PLAYER_JS = r"""
 (function(){
   var D = JSON.parse(document.getElementById('mp-data').textContent), T = D.tracks;
   var $ = function(id){ return document.getElementById(id); };
-  var q = '', mood = '', cur = null, loaded = false;
+  var q = '', mood = '', cur = null, loaded = false, apiPlayer = null, gen = 0;
   var want = new URLSearchParams(location.search).get('v');
   var start = T.filter(function(t){ return t.id === want; })[0] || T[0];
   function h(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function list(){ return T.filter(function(t){ return (!mood || t.mood === mood) && (!q || t.title.toLowerCase().indexOf(q) >= 0); }); }
+  var ALLOW = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+  function drop(id){ var n = $(id); if (n) n.remove(); }
+  function mark(state){ var v = $('mp-video'); if (v) v.setAttribute('data-autoplay', state); }
   function frame(src, title){
+    gen++;
+    if (apiPlayer && apiPlayer.destroy) { try { apiPlayer.destroy(); } catch (err) {} }
+    apiPlayer = null; drop('mp-unmute'); mark('gesture');
     var f = document.createElement('iframe'); f.src = src; f.title = title;
-    f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-    f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin';
+    f.allow = ALLOW; f.allowFullscreen = true; f.referrerPolicy = 'strict-origin-when-cross-origin';
     var v = $('mp-video'); v.innerHTML = ''; v.appendChild(f);
   }
+  function loadApi(ok, fail){
+    if (window.YT && YT.Player) { ok(); return; }
+    (loadApi.q || (loadApi.q = [])).push(ok);
+    if (fail) (loadApi.fails || (loadApi.fails = [])).push(fail);
+    if (loadApi.started) return;
+    loadApi.started = true;
+    window.YTConfig = window.YTConfig || {};
+    window.YTConfig.host = 'https://www.youtube-nocookie.com';
+    var prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function(){
+      if (typeof prev === 'function') { try { prev(); } catch (err) {} }
+      var q = loadApi.q || []; loadApi.q = [];
+      q.forEach(function(fn){ try { fn(); } catch (err) {} });
+    };
+    var s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    s.async = true;
+    s.onerror = function(){
+      var fs = loadApi.fails || []; loadApi.fails = []; loadApi.q = [];
+      fs.forEach(function(fn){ try { fn(); } catch (err) {} });
+    };
+    document.head.appendChild(s);
+  }
+  // First visit has no user gesture. Try audible autoplay; if the browser rejects it,
+  // mute and keep playing, then unmute on the first tap. If even muted playback is
+  // rejected, cover the same video with Tap to play so the shell never sits empty.
+  function beginAutoplay(t, my){
+    var v = $('mp-video');
+    v.innerHTML = '';
+    mark('starting');
+    var src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(t.id)
+      + '?autoplay=1&mute=0&rel=0&playsinline=1&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
+    var f = document.createElement('iframe');
+    f.id = 'mp-frame'; f.title = t.title; f.allow = ALLOW; f.allowFullscreen = true;
+    f.referrerPolicy = 'strict-origin-when-cross-origin'; f.src = src;
+    v.appendChild(f);
+    var player = null, triedMuted = false, settled = false, holding = false;
+    function state(){ try { return player ? player.getPlayerState() : -1; } catch (err) { return -1; } }
+    function audible(){ try { return !!(player && !player.isMuted() && player.getVolume() > 0); } catch (err) { return false; } }
+    function showUnmute(){
+      if ($('mp-unmute') || !player) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'mp-unmute'; b.id = 'mp-unmute'; b.textContent = 'Tap to unmute';
+      b.onclick = function(){ show(cur, true); };
+      v.appendChild(b);
+    }
+    function showBlockedTap(){
+      if (holding || $('mp-tap')) return;
+      holding = true; drop('mp-unmute'); mark('blocked');
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'mp-tap mp-fallback'; b.id = 'mp-tap';
+      b.innerHTML = '<span class="mp-pb" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span><small>Tap to play</small><span class="sr">Play ' + h(t.title) + '</span>';
+      b.onclick = function(){ show(cur, true); };
+      v.appendChild(b);
+    }
+    function onPlaying(){
+      if (my !== gen) return;
+      loaded = true; holding = false; settled = true;
+      if (audible()) { drop('mp-unmute'); drop('mp-tap'); mark('playing'); }
+      else { drop('mp-tap'); showUnmute(); mark('muted'); }
+    }
+    function onBlocked(){
+      if (my !== gen || holding) return;
+      if (state() === 1) { onPlaying(); return; }
+      if (!triedMuted) {
+        triedMuted = true;
+        try { if (player) { player.mute(); player.playVideo(); } } catch (err) {}
+        watchdog(3000, 4);
+        return;
+      }
+      if (state() === 3) return;
+      showBlockedTap();
+    }
+    var watchId = 0, watchStart = Date.now();
+    function watchdog(delay, buffersLeft){
+      var id = ++watchId;
+      setTimeout(function(){
+        if (id !== watchId || my !== gen || holding || settled) return;
+        var st = state();
+        if (st === 1) { onPlaying(); return; }
+        if (st === 3 && (Date.now() - watchStart) < 12000 && buffersLeft > 0) { watchdog(1500, buffersLeft - 1); return; }
+        if (st === 3) { showBlockedTap(); return; }
+        if (!triedMuted && player) {
+          triedMuted = true;
+          try { player.mute(); player.playVideo(); } catch (err) {}
+          watchdog(3000, 2);
+          return;
+        }
+        showBlockedTap();
+      }, delay);
+    }
+    watchdog(8000, 6);
+    loadApi(function(){
+      if (my !== gen || !$('mp-frame')) return;
+      try {
+        apiPlayer = new YT.Player('mp-frame', {
+          events: {
+            onReady: function(ev){
+              if (my !== gen) return;
+              player = ev.target; apiPlayer = player;
+              try {
+                var iframe = player.getIframe();
+                if (iframe) iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1';
+              } catch (err) {}
+              // autoplay=1&mute=0 is already on the iframe URL. A second playVideo()
+              // here races that request and can surface a false player error.
+              var st = state();
+              if (st === 1) onPlaying();
+              else {
+                if (st === 3) mark('buffering');
+                watchdog(3000, 6);
+              }
+            },
+            onAutoplayBlocked: onBlocked,
+            onStateChange: function(ev){
+              if (my !== gen || !ev) return;
+              if (ev.data === 1) onPlaying();
+              else if (ev.data === 3 && !settled) mark('buffering');
+            },
+            onError: function(){
+              if (my !== gen || holding) return;
+              showBlockedTap();
+            }
+          }
+        });
+      } catch (err) { if (my === gen) mark('embed'); }
+    }, function(){ if (my === gen) mark('embed'); });
+  }
   function show(t, play){
+    var my = ++gen;
     cur = t;
     $('mp-title').textContent = t.title;
     $('mp-meta').textContent = t.moodLabel + ' · ' + t.dur + ' · ' + t.date;
     $('mp-page').href = t.page;
     $('mp-yt').href = 'https://www.youtube.com/watch?v=' + t.id;
     $('mp-stores').innerHTML = t.stores.map(function(s){ return '<a class="btn ghost" rel="noopener" href="' + h(s.url) + '">' + h(s.name) + '</a>'; }).join('');
-    if (play || loaded) { loaded = true; frame('https://www.youtube-nocookie.com/embed/' + t.id + '?autoplay=1&rel=0&playsinline=1', t.title); }
-    else {
-      $('mp-video').innerHTML = '<button type="button" class="mp-tap" id="mp-tap"><img src="' + h(t.thumb) + '" alt="" width="1280" height="720" />'
-        + '<span class="mp-pb" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span><small>Tap play to load the YouTube player</small>'
-        + '<span class="sr">Play ' + h(t.title) + '</span></button>';
-      $('mp-tap').onclick = function(){ show(cur, true); };
-    }
+    if (play || loaded) {
+      loaded = true;
+      frame('https://www.youtube-nocookie.com/embed/' + t.id + '?autoplay=1&rel=0&playsinline=1', t.title);
+    } else beginAutoplay(t, my);
     render();
     if (history.replaceState) history.replaceState(null, '', '?v=' + t.id);
   }
@@ -281,8 +412,12 @@ PLAYER_CSS = """
     .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .mp { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 32px; align-items: center; margin-top: 18px; }
     .mp-video { position: relative; aspect-ratio: 16/9; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(232,196,120,.25); }
-    .mp-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-    .mp-tap { all: unset; cursor: pointer; position: absolute; inset: 0; display: block; }
+    .mp-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 1; }
+    .mp-unmute { position: absolute; z-index: 3; top: 12px; left: 12px; background: var(--gold); color: var(--navy); font: inherit; font-weight: 600; font-size: 13px; letter-spacing: .04em; border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; box-shadow: 0 6px 24px rgba(0,0,0,.45); }
+    .mp-unmute:hover, .mp-unmute:focus-visible { background: var(--gold-soft); }
+    .mp-unmute:focus-visible { outline: 2px solid var(--cream); outline-offset: 2px; }
+    .mp-tap { all: unset; cursor: pointer; position: absolute; inset: 0; display: block; z-index: 2; }
+    .mp-tap.mp-fallback { background: rgba(11,28,40,.35); }
     .mp-tap img { width: 100%; height: 100%; object-fit: cover; }
     .mp-tap small { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; font-size: 13px; color: var(--cream); text-shadow: 0 1px 4px #000; }
     .mp-pb { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 78px; height: 78px; border-radius: 50%; background: var(--gold); display: grid; place-items: center; box-shadow: 0 6px 30px rgba(0,0,0,.55); }
