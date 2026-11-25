@@ -35,7 +35,7 @@ SKIP = {"dist", "tools", "node_modules", "data", "ci"}
 NOCOPY = {"README.md", "JARVIS_DNS.md", "sitemap.xml"}
 NONSITE_EXT = {".md", ".py", ".toml", ".lock", ".log", ".yml"}
 
-def clean_title(t): return re.sub(r"\s*[|·]\s*Morntide\s*$", "", t, flags=re.I).strip()
+def clean_title(t): return re.sub(r"\s*[|·]\s*Morntide(?:\s+Focus Lab)?\s*$", "", t, flags=re.I).strip()
 def iso(s): h, m, x = s // 3600, s % 3600 // 60, s % 60; return "PT" + (f"{h}H" if h else "") + (f"{m}M" if m else "") + f"{x}S"
 def hms(s): h, m, x = s // 3600, s % 3600 // 60, s % 60; return f"{h}:{m:02d}:{x:02d}" if h else f"{m}:{x:02d}"
 def human(s):
