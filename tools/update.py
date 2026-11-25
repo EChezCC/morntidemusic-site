@@ -9,9 +9,10 @@ Zero videos or a listing error aborts without writing anything."""
 import json, os, pathlib, re, subprocess, sys, time, urllib.request
 R = pathlib.Path(__file__).resolve().parent.parent; D = R / "data"
 CH = "https://www.youtube.com/channel/UCjIlIYsKiIyUOVsHpItKOWA"
-PLAYLISTS = {  # id -> (label, mood).  Rule order for a video's mood: FOCUS/RISE/SLEEP playlists, then Deep Work Blocks, then RELAX/First Light, else SLEEP
+PLAYLISTS = {  # id -> (label, mood).  Rule order for a video's mood: FOCUS/RISE/SLEEP playlists, then Deep Work Blocks, then RELAX/First Light, then Focus Lab / 1-Hour, else SLEEP
   "PLUp6gLFHAa3E": ("FOCUS", "focus"), "PLSmZ4mxAy_Sg": ("RISE", "rise"), "PLF2-pms8eUrY": ("SLEEP", "sleep"),
-  "PLe1cGzmYaAX0": ("Deep Work Blocks", "focus"), "PLKj69vZNgz7s": ("RELAX", "rise"), "PLH3nuFmJ72Ds": ("First Light Sessions", "rise")}
+  "PLe1cGzmYaAX0": ("Deep Work Blocks", "focus"), "PLKj69vZNgz7s": ("RELAX", "rise"), "PLH3nuFmJ72Ds": ("First Light Sessions", "rise"),
+  "PLSM7Pk3bKWbA": ("Focus Lab", "focus"), "PLOyMA8Pr2vNc": ("1-Hour Deep Focus Sessions", "focus")}
 ORDER = list(PLAYLISTS)
 SLUGS = {}
 META = os.environ.get("YTDLP_META_DIR")
